@@ -14,7 +14,7 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/getUser", protect, getUserInfo);
 
-router.post("/upload-img", protect, upload.single("image"), (req, res) => {
+router.post("/upload-img", upload.single("image"), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: "Image upload failed" });
     } 
