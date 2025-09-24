@@ -13,9 +13,17 @@ const app = express();
 // Middleware to handle CORS
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "*",
+        origin: function(origin, callback) {
+            const allowedOrigins = (process.env.CLIENT_URL || "*").split(',');
+            if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"]
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true
     })
 );
 
