@@ -11,21 +11,17 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const app = express();
 
 // Middleware to handle CORS
-app.use(
-    cors({
-        origin: function(origin, callback) {
-            const allowedOrigins = (process.env.CLIENT_URL || "*").split(',');
-            if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-        credentials: true
-    })
-);
+// Enable pre-flight requests for all routes
+app.options('*', cors());
+
+// Configure CORS
+app.use(cors({
+    origin: true, // Allow all origins temporarily to debug the connection
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    credentials: true,
+    maxAge: 86400 // Cache preflight request for 24 hours
+}));
 
 app.use(express.json());
 
