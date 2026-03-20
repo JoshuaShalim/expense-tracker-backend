@@ -13,9 +13,10 @@ const app = express();
 
 // ✅ Allowed origins (LOCAL + PRODUCTION)
 const allowedOrigins = [
-  "http://localhost:5173",
+  //"http://localhost:5173",
   //process.env.CLIENT_URL // frontend deployed URL
-  "https://expense-tracker-eta-ashy-39.vercel.app"
+  'https://expense-tracker-c0e9rnudq-joshua-shalims-projects.vercel.app',
+  'https://expense-tracker-eta-ashy-39.vercel.app',
 ];
 
 // ✅ CORS (CLEAN)
