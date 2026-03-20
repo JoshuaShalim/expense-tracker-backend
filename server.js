@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const serverless = require("serverless-http");
 
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
@@ -11,13 +12,13 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const app = express();
 
-// ✅ Allowed origins (LOCAL + PRODUCTION)
+// ✅ Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
-  process.env.CLIENT_URL // frontend deployed URL
+  "https://expense-tracker-eta-ashy-39.vercel.app"
 ];
 
-// ✅ CORS (CLEAN)
+// ✅ CORS
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -29,7 +30,7 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ Handle preflight
+// ✅ Preflight
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -42,7 +43,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ Middleware
 app.use(express.json());
 
 // ✅ DB
@@ -57,6 +57,11 @@ app.use("/api/v1/dashboard", dashboardRoutes);
 // ✅ Static
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Start
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+// ✅ Detect environment
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+}
+
+// ✅ Export for Vercel
+module.exports = serverless(app);
