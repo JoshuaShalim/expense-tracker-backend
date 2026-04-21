@@ -13,36 +13,25 @@ const app = express();
 
 // ✅ Allowed origins (LOCAL + PRODUCTION)
 const allowedOrigins = [
-  //"http://localhost:5173",
-  //process.env.CLIENT_URL // frontend deployed URL
-  'https://expense-tracker-c0e9rnudq-joshua-shalims-projects.vercel.app',
-  'https://expense-tracker-eta-ashy-39.vercel.app',
+  "http://localhost:3000",
+  "https://expense-tracker-eta-ashy-39.vercel.app",
 ];
 
-// ✅ CORS (CLEAN)
+// ✅ CORS Configuration (BEFORE all routes)
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("CORS not allowed"));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  optionsSuccessStatus: 200
 }));
-
-// ✅ Handle preflight
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
 
 // ✅ Middleware
 app.use(express.json());
