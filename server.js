@@ -56,8 +56,7 @@ app.use("/api/v1/income", incomeRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 
-// ✅ Static
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// ✅ Static uploads removed (using Cloudinary instead for serverless compatibility)
 
 // ✅ Start
 const PORT = process.env.PORT || 10000;
