@@ -14,24 +14,33 @@ const app = express();
 // ✅ Allowed origins (LOCAL + PRODUCTION)
 const allowedOrigins = [
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://expense-tracker-eta-ashy-39.vercel.app",
 ];
 
-// ✅ CORS Configuration (BEFORE all routes)
-app.use(cors({
+// ✅ CORS Configuration with ALL required headers
+const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (mobile apps, curl, etc.) OR from allowed origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS not allowed"));
+      callback(new Error("CORS not allowed for origin: " + origin));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  exposedHeaders: ["Content-Type", "Authorization"],
+  maxAge: 86400, // 24 hours - cache preflight results
   optionsSuccessStatus: 200
-}));
+};
+
+// ✅ Apply CORS to all routes
+app.use(cors(corsOptions));
+
+// ✅ Handle preflight OPTIONS requests for all routes (instant response, no DB)
+app.options("*", cors(corsOptions));
 
 // ✅ Middleware
 app.use(express.json());

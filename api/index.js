@@ -19,29 +19,40 @@ const allowedOrigins = [
   "https://expense-tracker-eta-ashy-39.vercel.app"
 ];
 
-// ✅ CORS
+// ✅ CORS Configuration with ALL required headers
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "https://expense-tracker-eta-ashy-39.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, etc.) OR from allowed origins
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed for origin: " + origin));
+    }
+  },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  exposedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  maxAge: 86400, // 24 hours - cache preflight results
+  optionsSuccessStatus: 200
 };
 
-// ✅ Proper CORS
+// ✅ Apply CORS to all routes
 app.use(cors(corsOptions));
 
-// ✅ Proper preflight handling
+// ✅ Handle preflight OPTIONS requests for all routes (instant response, no DB)
 app.options("*", cors(corsOptions));
-
 
 // ✅ Middleware
 app.use(express.json());
 
 // ✅ DB connection for each request
 app.use(async (req, res, next) => {
+  // Skip DB connection for OPTIONS requests (preflight)
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+  
   try {
     await connectDB();
     next();
