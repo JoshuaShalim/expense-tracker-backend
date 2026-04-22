@@ -16,29 +16,26 @@ const app = express();
 // ✅ Allowed origins
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://<your-frontend-vercel-url>.vercel.app"
+  "https://expense-tracker-eta-ashy-39.vercel.app"
 ];
 
 // ✅ CORS
-app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("CORS not allowed"));
-    }
-  },
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "https://expense-tracker-eta-ashy-39.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
-}));
+};
 
-// ✅ Preflight handling
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
+// ✅ Proper CORS
+app.use(cors(corsOptions));
+
+// ✅ Proper preflight handling
+app.options("*", cors(corsOptions));
+
 
 // ✅ Middleware
 app.use(express.json());
