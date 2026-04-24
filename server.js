@@ -15,6 +15,19 @@ const allowedOrigins = [
   "https://expense-tracker-eta-ashy-39.vercel.app",
 ];
 
+// Health check endpoint (no DB required)
+app.get("/health", (req, res) => {
+  res.status(200).json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString(),
+    env: {
+      mongoUriSet: !!process.env.MONGO_URI,
+      jwtSecretSet: !!process.env.JWT_SECRET,
+      cloudinarySet: !!process.env.CLOUDINARY_CLOUD_NAME
+    }
+  });
+});
+
 // Fixed CORS Configuration for Serverless
 app.use(
   cors({
