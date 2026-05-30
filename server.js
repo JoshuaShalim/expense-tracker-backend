@@ -7,38 +7,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.get("/test", (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    message: "test route works"
+    route: "/"
   });
 });
 
 app.get("/health", (req, res) => {
   res.json({
-    status: "ok"
+    route: "/health"
   });
 });
 
-try {
-  const authRoutes = require("./routes/authRoutes");
-
-  app.get("/auth-loaded", (req, res) => {
-    res.json({
-      authRoutesLoaded: true
-    });
+app.get("/test", (req, res) => {
+  res.json({
+    route: "/test"
   });
+});
 
-  app.use("/api/v1/auth", authRoutes);
-
-} catch (err) {
-  console.error("AUTH ROUTE LOAD ERROR:", err);
-
-  app.get("/auth-loaded", (req, res) => {
-    res.status(500).json({
-      authRoutesLoaded: false,
-      error: err.message
-    });
+// NO AUTH ROUTES
+app.get("/api/v1/auth/ping", (req, res) => {
+  res.json({
+    route: "/api/v1/auth/ping"
   });
-}
+});
 
 module.exports = app;
