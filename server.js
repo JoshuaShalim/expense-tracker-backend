@@ -9,12 +9,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/v1/auth", authRoutes);
+// TEST ROUTE
+app.get("/test", (req, res) => {
+  res.json({
+    message: "test route works"
+  });
+});
 
+// HEALTH ROUTE
 app.get("/health", (req, res) => {
   res.json({
     status: "ok"
   });
 });
+
+// AUTH ROUTES
+app.use("/api/v1/auth", authRoutes);
 
 module.exports = app;
