@@ -1,5 +1,4 @@
-module.exports = (req, res) => {
-  res.status(200).json({
-    status: "vercel function works"
-  });
-};
+const serverless = require("serverless-http");
+const app = require("../server");
+
+module.exports = serverless(app);
