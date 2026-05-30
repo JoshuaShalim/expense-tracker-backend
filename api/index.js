@@ -1,3 +1,5 @@
+console.log("API INDEX LOADED");
+
 const serverless = require("serverless-http");
 const app = require("../server");
 
