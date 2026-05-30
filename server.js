@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://expense-tracker-eta-ashy-39.vercel.app"
+      "https://expense-tracker-eta-ashy-39.vercel.app",
     ],
     credentials: true,
   })
@@ -23,7 +23,7 @@ app.use(express.json());
 
 app.get("/health", (req, res) => {
   res.status(200).json({
-    status: "ok"
+    status: "ok",
   });
 });
 
