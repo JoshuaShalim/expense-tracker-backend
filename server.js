@@ -3,10 +3,21 @@ const express = require("express");
 
 const app = express();
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
   res.json({
-    url: req.originalUrl,
-    path: req.path
+    route: "/"
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    route: "/health"
+  });
+});
+
+app.get("/ping", (req, res) => {
+  res.json({
+    route: "/ping"
   });
 });
 
