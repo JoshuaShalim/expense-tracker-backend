@@ -52,10 +52,10 @@ app.use(express.json({ limit: "4.5mb" })); // Match Vercel limit
 
 // ⚠️ DO NOT connect DB here
 
-app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/income", incomeRoutes);
-app.use("/api/v1/expense", expenseRoutes);
-app.use("/api/v1/dashboard", dashboardRoutes);
+// app.use("/api/v1/auth", authRoutes);
+// app.use("/api/v1/income", incomeRoutes);
+// app.use("/api/v1/expense", expenseRoutes);
+// app.use("/api/v1/dashboard", dashboardRoutes);
 
 // 404 Handler - Catch undefined routes
 app.use((req, res) => {
