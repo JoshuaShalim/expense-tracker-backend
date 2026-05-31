@@ -1,94 +1,38 @@
-const User = require("../models/User")
-const e = require('express');
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 const connectDB = require("../config/db");
 
-//Generate JWT Token
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "50d" });
-};
+const protect = async (req, res, next) => {
+  // ✅ SKIP OPTIONS preflight requests - they don't need authentication
+  if (req.method === "OPTIONS") {
+    return next();
+  }
 
-//Register User 
-exports.registerUser = async (req, res) => {
-    const { fullName, email, password, profileImageUrl } = req.body;
-
-    //Validation: Check for Missing fields
-    if (!fullName || !email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
-    }   
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
-        // Ensure DB connection
-        await connectDB();
+      const token = req.headers.authorization.split(" ")[1];
+      console.log("Token received:", token);
 
-        //Check if email already exists
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: "Email already in use" });
-        }
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log("Decoded token:", decoded);
 
-        //Create User
-        const user = await User.create({ 
-            fullName, 
-            email, 
-            password, 
-            profileImageUrl
-        });
+      // Ensure DB connection before querying User
+      await connectDB();
 
-        res.status(201).json({ 
-            id: user._id,
-            user,
-            token: generateToken(user._id)
-        });
-    } catch (error) {
-        res
-        .status(500)
-        .json({ message: "Error registering user", error: error.message });
+      const user = await User.findById(decoded.id).select("-password");
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = user;
+      next();
+    } catch (err) {
+      console.error("JWT error:", err.message);
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
+  } else {
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
 };
 
-//Login User
-exports.loginUser = async (req, res) => {
-    const {email, password} = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ message: "All fields are required" });
-    }
-    try {
-        // Ensure DB connection
-        await connectDB();
-
-        const user = await User.findOne({ email });
-        if (!user || !(await user.comparePassword(password))) {
-            return res.status(400).json({ message: "Invalid credentials" });
-        }
-        res.status(200).json({
-            id: user._id,
-            user,
-            token: generateToken(user._id)
-        });
-    } catch (error) {
-        res
-        .status(500)
-        .json({ message: "Error logging in user", error: error.message });
-    }
-};
-
-//Get User Info
-exports.getUserInfo = async (req, res) => {
-    const userId = req.user.id;
-    try {
-        // Ensure DB connection
-        await connectDB();
-
-        const user = await User.findById(req.user.id).select("-password");
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json({ user });
-    } catch (error) {
-        res
-        .status(500)
-        .json({ message: "Error fetching user info", error: error.message });
-    }
-};
+module.exports = { protect };
