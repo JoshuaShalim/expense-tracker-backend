@@ -48,13 +48,6 @@ app.use(
   })
 );
 
-// Explicit OPTIONS handler for preflight
-app.options("*", (req, res) => {
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, X-Requested-With");
-  res.setHeader("Access-Control-Max-Age", "86400");
-  res.status(204).end();
-});
 
 app.use(express.json({ limit: "4.5mb" })); // Match Vercel limit
 
