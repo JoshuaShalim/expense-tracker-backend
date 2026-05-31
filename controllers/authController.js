@@ -1,6 +1,7 @@
 const User = require("../models/User")
 const e = require('express');
 const jwt = require('jsonwebtoken');
+const connectDB = require("../config/db");
 
 //Generate JWT Token
 const generateToken = (id) => {
@@ -16,6 +17,9 @@ exports.registerUser = async (req, res) => {
         return res.status(400).json({ message: "All fields are required" });
     }   
     try {
+        // Ensure DB connection
+        await connectDB();
+
         //Check if email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -49,6 +53,9 @@ exports.loginUser = async (req, res) => {
         return res.status(400).json({ message: "All fields are required" });
     }
     try {
+        // Ensure DB connection
+        await connectDB();
+
         const user = await User.findOne({ email });
         if (!user || !(await user.comparePassword(password))) {
             return res.status(400).json({ message: "Invalid credentials" });
@@ -69,6 +76,9 @@ exports.loginUser = async (req, res) => {
 exports.getUserInfo = async (req, res) => {
     const userId = req.user.id;
     try {
+        // Ensure DB connection
+        await connectDB();
+
         const user = await User.findById(req.user.id).select("-password");
 
         if (!user) {
