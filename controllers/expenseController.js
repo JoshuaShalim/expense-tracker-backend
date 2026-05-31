@@ -2,11 +2,15 @@
 const xlsx = require('xlsx');
 const Expense = require("../models/Expense");
 const { suggestCategory } = require("../utils/simple-categorizer");
+const connectDB = require("../config/db");
 
 // Add Expense (with auto-categorization)
 exports.addExpense = async (req, res) => {
   const userId = req.user.id;
   try {
+    // Ensure DB connection
+    await connectDB();
+
     const { icon, category, amount, date, description, merchant } = req.body;
 
     // Validation
@@ -40,6 +44,9 @@ exports.addExpense = async (req, res) => {
 exports.getAllExpenses = async (req, res) => {
   const userId = req.user.id;
   try {
+    // Ensure DB connection
+    await connectDB();
+
     const expense = await Expense.find({ userId }).sort({ date: -1 });
     res.json(expense);
   } catch (error) {
@@ -50,6 +57,9 @@ exports.getAllExpenses = async (req, res) => {
 // Delete Expense
 exports.deleteExpense = async (req, res) => {
   try {
+    // Ensure DB connection
+    await connectDB();
+
     await Expense.findByIdAndDelete(req.params.id);
     res.json({ message: "Expense deleted successfully" });
   } catch (error) {
@@ -61,6 +71,9 @@ exports.deleteExpense = async (req, res) => {
 exports.downloadExpenseExcel = async (req, res) => {
   const userId = req.user.id;
   try {
+    // Ensure DB connection
+    await connectDB();
+
     const expense = await Expense.find({ userId }).sort({ date: -1 });
     // Prepare data for Excel
     const data = expense.map((item) => ({
