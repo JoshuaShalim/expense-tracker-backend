@@ -1,10 +1,14 @@
 const xlsx = require('xlsx');
 const Income = require("../models/Income")
+const connectDB = require("../config/db");
 
 // Add Income Source
 exports.addIncome = async (req, res) => {
     const userId = req.user.id;
     try {
+        // Ensure DB connection
+        await connectDB();
+
         const { icon, source, amount, date } = req.body;
         
         // Validation: Check  for missing fields 
@@ -31,6 +35,9 @@ exports.addIncome = async (req, res) => {
 exports.getAllIncomes = async (req, res) => {
     const userId = req.user.id;
     try {
+        // Ensure DB connection
+        await connectDB();
+
         const income = await Income.find({ userId }).sort({ date: -1 });
         res.json(income);
     } catch (error) {
@@ -41,6 +48,9 @@ exports.getAllIncomes = async (req, res) => {
 // Delete Income Source
 exports.deleteIncome = async (req, res) => {
  try {
+        // Ensure DB connection
+        await connectDB();
+
         await Income.findByIdAndDelete( req.params.id);
         res.json({ message: "Income deleted successfully" });
     } catch (error) {
@@ -52,6 +62,9 @@ exports.deleteIncome = async (req, res) => {
 exports.downloadIncomeExcel = async (req, res) => {
     const userId = req.user.id;
     try {
+        // Ensure DB connection
+        await connectDB();
+
         const income = await Income.find({ userId }).sort({ date:-1 });
         // Prepare  data for Excel 
         const  data = income.map((item) => ({
