@@ -1,42 +1,56 @@
-const User = require("../models/User")
-const e = require('express');
-const jwt = require('jsonwebtoken');
+const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 const connectDB = require("../config/db");
 
-//Generate JWT Token
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const publicUser = (user) => ({
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    profileImageUrl: user.profileImageUrl,
+});
+
+// Generate a short-lived access token.
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "50d" });
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
 //Register User 
 exports.registerUser = async (req, res) => {
     const { fullName, email, password, profileImageUrl } = req.body;
+    const normalizedName = fullName?.trim();
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    //Validation: Check for Missing fields
-    if (!fullName || !email || !password) {
+    if (!normalizedName || !normalizedEmail || !password) {
         return res.status(400).json({ message: "All fields are required" });
-    }   
+    }
+    if (!EMAIL_PATTERN.test(normalizedEmail)) {
+        return res.status(400).json({ message: "Enter a valid email address" });
+    }
+    if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
     try {
         // Ensure DB connection
         await connectDB();
 
         //Check if email already exists
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({ message: "Email already in use" });
         }
 
         //Create User
         const user = await User.create({ 
-            fullName, 
-            email, 
+            fullName: normalizedName,
+            email: normalizedEmail,
             password, 
             profileImageUrl
         });
 
         res.status(201).json({ 
-            id: user._id,
-            user,
+            user: publicUser(user),
             token: generateToken(user._id)
         });
     } catch (error) {
@@ -48,21 +62,21 @@ exports.registerUser = async (req, res) => {
 
 //Login User
 exports.loginUser = async (req, res) => {
-    const {email, password} = req.body;
-    if (!email || !password) {
+    const { email, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
         return res.status(400).json({ message: "All fields are required" });
     }
     try {
         // Ensure DB connection
         await connectDB();
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: normalizedEmail }).select("+password");
         if (!user || !(await user.comparePassword(password))) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
         res.status(200).json({
-            id: user._id,
-            user,
+            user: publicUser(user),
             token: generateToken(user._id)
         });
     } catch (error) {
@@ -74,7 +88,6 @@ exports.loginUser = async (req, res) => {
 
 //Get User Info
 exports.getUserInfo = async (req, res) => {
-    const userId = req.user.id;
     try {
         // Ensure DB connection
         await connectDB();
